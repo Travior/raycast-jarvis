@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask import request
 from sqllineage.runner import LineageRunner
+import re
 
 sqldep_bp = Blueprint("sqldep", __name__)
 
@@ -14,11 +15,15 @@ def get_dependencies():
         response["number_of_statements"] = len(result.statements())
         for statement in result.statements():
             result = LineageRunner(statement)
+            if len(result.target_tables) >= 1:
+                target = str(result.target_tables[0]) 
+            else:
+                target = ""
             response["dependencies"].append(
                 {
-                    "statement": statement,
+                    "statement": re.sub(r"(' +')", " ", statement.strip().replace("\n", "")),
                     "tables": [str(t) for t in result.source_tables],
-                    "target": str(result.target_tables[0]) if len(result.target_tables) >= 1 else ""
+                    "target": target
                 }
             )
         return response
@@ -34,12 +39,16 @@ def get_column_level_dependencies():
         for statement in result.statements():
             r = LineageRunner(statement)
             cols = r.get_column_lineage()
+            if len(result.target_tables) >= 1:
+                target = str(result.target_tables[0]) 
+            else:
+                target = ""
             response["dependencies"].append(
                 {
-                    "statement": statement,
+                    "statement": re.sub(r"(' +')", " ", statement.strip().replace("\n", "")),
                     "tables": [str(t) for t in r.source_tables],
                     "columns": [{"column":str(c[-1]), "dependencies":[str(col) for col in c[:-1]]} for c in cols],
-                    "target": str(result.target_tables[0]) if len(result.target_tables) >= 1 else ""
+                    "target": target
                 })
         print(response)
         return response
