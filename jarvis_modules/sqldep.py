@@ -18,7 +18,29 @@ def get_dependencies():
                 {
                     "statement": statement,
                     "tables": [str(t) for t in result.source_tables],
+                    "target": str(result.target_tables[0]) if len(result.target_tables) >= 1 else ""
                 }
             )
         return response
     return ("bad request", 400)
+
+@sqldep_bp.route("/sqlcoldep")
+def get_column_level_dependencies():
+    data = request.get_json(silent=True)
+    if data is not None and "sql" in data.keys():
+        response = {"number_of_statements": 0, "dependencies": []}
+        result = LineageRunner(data["sql"])
+        response["number_of_statements"] = len(result.statements())
+        for statement in result.statements():
+            r = LineageRunner(statement)
+            cols = r.get_column_lineage()
+            response["dependencies"].append(
+                {
+                    "statement": statement,
+                    "tables": [str(t) for t in r.source_tables],
+                    "columns": [{"column":str(c[-1]), "dependencies":[str(col) for col in c[:-1]]} for c in cols],
+                    "target": str(result.target_tables[0]) if len(result.target_tables) >= 1 else ""
+                })
+        print(response)
+        return response
+    return("",200)
