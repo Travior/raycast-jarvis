@@ -21,7 +21,7 @@ def get_dependencies():
                 target = ""
             response["dependencies"].append(
                 {
-                    "statement": re.sub(r"(' +')", " ", statement.strip().replace("\n", "")),
+                    "statement": re.sub(r" +", " ", statement.strip().replace("\n", " ")),
                     "tables": [str(t) for t in result.source_tables],
                     "target": target
                 }
@@ -45,7 +45,7 @@ def get_column_level_dependencies():
                 target = ""
             response["dependencies"].append(
                 {
-                    "statement": re.sub(r"(' +')", " ", statement.strip().replace("\n", "")),
+                    "statement": re.sub(r"(' +')", " ", statement.strip().replace("\n", " ")),
                     "tables": [str(t) for t in r.source_tables],
                     "columns": [{"column":str(c[-1]), "dependencies":[str(col) for col in c[:-1]]} for c in cols],
                     "target": target
