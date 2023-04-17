@@ -50,6 +50,5 @@ def get_column_level_dependencies():
                     "columns": [{"column":str(c[-1]), "dependencies":[str(col) for col in c[:-1]]} for c in cols],
                     "target": target
                 })
-        print(response)
         return response
-    return("",200)
+    return("bad request",400)
